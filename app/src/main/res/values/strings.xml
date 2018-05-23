@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">BakingApp</string>
+
+
+    <string name="no_connection">You have disconnected. Please check your internet connection and try again.</string>
+    <string name="error_message">Failed to get results.\nPlease try again.</string>
+
+    <string name="recipe_ingredients">Recipe Ingredients</string>
+
+
+    <string name="content_authority">com.example.android.bakingapp</string>
+
+    <string name="step_numerification">STEP: </string>
+    <string name="pref_set_widget">SET WIDGET </string>
+    <string name="widget_info_success">Widget set successful.</string>
+
+
+
+
+</resources>
