@@ -14,6 +14,7 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.android.bakingapp.R;
@@ -36,20 +37,21 @@ import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
+import com.squareup.picasso.Picasso;
 
 public class DetailPartFragment extends Fragment implements ExoPlayer.EventListener{
 
-    private Step step;
-    private static final String STATE_KEY_STEP_DETAIL = "state_key_step_detail";
+    private Step mStep;
     private SimpleExoPlayer mExoPlayer;
     private SimpleExoPlayerView mPlayerView;
     private static MediaSessionCompat mMediaSession;
     private PlaybackStateCompat.Builder mStateBuilder;
+    private ImageView thumbnailImage;
 
     private static final String TAG = RecipeStepDetailActivity.class.getSimpleName();
-
     private static final String ARG_PAGE  = "ARG_PAGE";
     private static final String ARG_STEPS = "ARG_STEPS";
+    private static final String STATE_KEY_STEP_DETAIL = "state_key_step_detail";
 
 
 
@@ -78,9 +80,8 @@ public class DetailPartFragment extends Fragment implements ExoPlayer.EventListe
         if (getArguments() != null)
         {
             int mPage = getArguments().getInt(ARG_PAGE);
-            step = getArguments().getParcelable(ARG_STEPS);
+            mStep = getArguments().getParcelable(ARG_STEPS);
         }
-
     }
 
     /**
@@ -91,39 +92,59 @@ public class DetailPartFragment extends Fragment implements ExoPlayer.EventListe
 
         if (savedInstanceState != null)
         {
-            step = savedInstanceState.getParcelable(STATE_KEY_STEP_DETAIL);
+            mStep = savedInstanceState.getParcelable(STATE_KEY_STEP_DETAIL);
         }
 
         // Inflate the Android-Me fragment layout
         View rootView = inflater.inflate(R.layout.fragment_detail_part, container, false);
 
         // Initialize the player view.
-        mPlayerView = rootView.findViewById(R.id.playerView);
+        mPlayerView    = rootView.findViewById(R.id.playerView);
+        thumbnailImage = rootView.findViewById(R.id.step_imageview);
 
         TextView description     = rootView.findViewById(R.id.step_title_txt);
         TextView shorDescription = rootView.findViewById(R.id.step_detail_txt);
 
 
 
-        if (step != null)
+        if (mStep != null)
         {
-            description.setText(step.getShortDescription());
-            shorDescription.setText(step.getDescription());
+            description.setText(mStep.getShortDescription());
+            shorDescription.setText(mStep.getDescription());
 
 
-            String  videoURL = step.getVideoURL();
+            String  videoURL     = mStep.getVideoURL();
+            String  thumbnailURL = mStep.getThumbnailURL();
 
             if (TextUtils.isEmpty(videoURL))
             {
                 mPlayerView.setVisibility(View.GONE);
+                thumbnailImage.setVisibility(View.VISIBLE);
+
+                if (TextUtils.isEmpty(thumbnailURL))
+                {
+                    Picasso.get().load(R.drawable.user_placeholder)
+                                 .into(thumbnailImage);
+                }
+                else
+                {
+                    Picasso.get()
+                            .load(thumbnailURL)
+                            .placeholder(R.drawable.user_placeholder)
+                            .error(R.drawable.user_placeholder_error)
+                            .into(thumbnailImage);
+                }
             }
             else
             {
+                mPlayerView.setVisibility(View.VISIBLE);
+                thumbnailImage.setVisibility(View.GONE);
+
                 // Initialize the Media Session.
                 initializeMediaSession();
 
                 // Initialize the player.
-                initializePlayer(Uri.parse(step.getVideoURL()));
+                initializePlayer(Uri.parse(mStep.getVideoURL()));
             }
         }
 
@@ -132,9 +153,9 @@ public class DetailPartFragment extends Fragment implements ExoPlayer.EventListe
     }
 
 
-    public void setStep(Step mStep)
+    public void setStep(Step step)
     {
-        step = mStep;
+        mStep = step;
     }
 
 
@@ -217,7 +238,7 @@ public class DetailPartFragment extends Fragment implements ExoPlayer.EventListe
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState)
     {
-        outState.putParcelable(STATE_KEY_STEP_DETAIL,  step);
+        outState.putParcelable(STATE_KEY_STEP_DETAIL,  mStep);
         super.onSaveInstanceState(outState);
     }
 
@@ -256,6 +277,7 @@ public class DetailPartFragment extends Fragment implements ExoPlayer.EventListe
 
 
     // ExoPlayer Event Listeners
+
     @Override
     public void onTimelineChanged(Timeline timeline, Object manifest) {
 

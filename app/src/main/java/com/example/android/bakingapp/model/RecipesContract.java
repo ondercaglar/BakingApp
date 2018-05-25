@@ -6,6 +6,9 @@ import android.provider.BaseColumns;
 
 public class RecipesContract {
 
+
+    private RecipesContract() {}
+
     /*
     * The "Content authority" is a name for the entire content provider, similar to the
     * relationship between a domain name and its website. A convenient string to use for the

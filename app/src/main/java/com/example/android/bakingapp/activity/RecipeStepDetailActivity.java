@@ -24,11 +24,13 @@ import static com.example.android.bakingapp.fragments.MasterListFragment.MAIN_ST
 public class RecipeStepDetailActivity extends AppCompatActivity implements
         LoaderManager.LoaderCallbacks<Cursor>  {
 
-    private int recipeID;
+    private int mRecipeId;
+    private int mPosition;
+    private CategoryAdapter mAdapter;
+    private ViewPager mViewPager;
+
+
     private static final int ID_DETAIL_STEP_LOADERS = 341;
-    private CategoryAdapter adapter;
-    private int position;
-    private ViewPager viewPager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -36,22 +38,22 @@ public class RecipeStepDetailActivity extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_step_detail);
 
-        recipeID   = getIntent().getIntExtra("recipeID", 0);
-        position   = getIntent().getIntExtra("position", 0);
+        mRecipeId   = getIntent().getIntExtra("recipeID", 0);
+        mPosition   = getIntent().getIntExtra("position", 0);
         String recipeName = getIntent().getStringExtra("recipeName");
 
         // Get the ViewPager and set it's PagerAdapter so that it can display items
-        viewPager = findViewById(R.id.viewpager);
+        mViewPager = findViewById(R.id.viewpager);
         // Create an adapter that knows which fragment should be shown on each page
-        adapter = new CategoryAdapter(this, getSupportFragmentManager());
+        mAdapter = new CategoryAdapter(this, getSupportFragmentManager());
 
         // Set the adapter onto the view pager
-        viewPager.setAdapter(adapter);
-        viewPager.setCurrentItem(position);
+        mViewPager.setAdapter(mAdapter);
+        mViewPager.setCurrentItem(mPosition);
 
         // Give the TabLayout the ViewPager
         TabLayout tabLayout = findViewById(R.id.tabs);
-        tabLayout.setupWithViewPager(viewPager);
+        tabLayout.setupWithViewPager(mViewPager);
 
 
         getSupportLoaderManager().initLoader(ID_DETAIL_STEP_LOADERS, null, this);
@@ -100,7 +102,7 @@ public class RecipeStepDetailActivity extends AppCompatActivity implements
 
             case ID_DETAIL_STEP_LOADERS:
                 /* URI for all rows of recipe data in our recipes table */
-                Uri stepQueryUri = RecipesContract.RecipeEntry.buildStepUriWithID(recipeID);
+                Uri stepQueryUri = RecipesContract.RecipeEntry.buildStepUriWithID(mRecipeId);
 
                 return new CursorLoader(this,
                         stepQueryUri,
@@ -117,8 +119,8 @@ public class RecipeStepDetailActivity extends AppCompatActivity implements
     @Override
     public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor data)
     {
-        adapter.swapSteps(data);
-        viewPager.setCurrentItem(position);
+        mAdapter.swapSteps(data);
+        mViewPager.setCurrentItem(mPosition);
     }
 
     @Override
@@ -128,7 +130,7 @@ public class RecipeStepDetailActivity extends AppCompatActivity implements
          * Since this Loader's data is now invalid, we need to clear the Adapter that is
          * displaying the data.
          */
-        adapter.swapSteps(null);
+        mAdapter.swapSteps(null);
     }
 
 

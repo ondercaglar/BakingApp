@@ -48,6 +48,9 @@ dependencies
             //exoplayer
             implementation 'com.google.android.exoplayer:exoplayer:r2.2.0'
 
+            //picasso
+            implementation 'com.squareup.picasso:picasso:2.71828'
+
             implementation 'com.android.support:support-media-compat:27.1.1'
 
             implementation 'com.firebase:firebase-jobdispatcher:0.8.5'
