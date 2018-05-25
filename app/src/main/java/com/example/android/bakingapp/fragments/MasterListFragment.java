@@ -181,10 +181,11 @@ public class MasterListFragment extends Fragment implements StepAdapter.StepAdap
                 mCursor = data;
                 //if (data.getCount() != 0) showWeatherDataView();
 
+                /*
                 if (twoPane)
                 {
                     onClickStepAdapter(0);
-                }
+                }*/
 
                 break;
 

@@ -23,7 +23,7 @@ public class RecipeDetailActivity extends AppCompatActivity implements MasterLis
 {
     private String recipeName ="";
     private int recipeID;
-    private static final String STATE_KEY_ID   = "state_key_id";
+
     private static final String STATE_KEY_NAME = "state_key_name";
 
     // Track whether to display a two-pane or single-pane UI
@@ -46,12 +46,6 @@ public class RecipeDetailActivity extends AppCompatActivity implements MasterLis
             {
                 recipeID   = getIntent().getIntExtra(RecipesContract.RecipeEntry.COLUMN_RECIPE_ID, 0);
                 recipeName = getIntent().getStringExtra("recipeName");
-            }
-            else
-            {
-                recipeID   = savedInstanceState.getInt(STATE_KEY_ID);
-                recipeName = savedInstanceState.getString(STATE_KEY_NAME);
-            }
 
                 // In two-pane mode, add initial BodyPartFragments to the screen
                 FragmentManager fragmentManager = getSupportFragmentManager();
@@ -62,12 +56,14 @@ public class RecipeDetailActivity extends AppCompatActivity implements MasterLis
                 // Add the fragment to its container using a transaction
                 fragmentManager.beginTransaction().add(R.id.head_container, masterListFragment).commit();
 
-
                 DetailPartFragment detailPartFragment = new DetailPartFragment();
                 // Add the fragment to its container using a transaction
                 fragmentManager.beginTransaction().add(R.id.detail_container, detailPartFragment).commit();
-                //onStepSelected(0);
-
+            }
+            else
+            {
+                recipeName = savedInstanceState.getString(STATE_KEY_NAME);
+            }
         }
         else
         {
@@ -77,12 +73,6 @@ public class RecipeDetailActivity extends AppCompatActivity implements MasterLis
             {
                 recipeID   = getIntent().getIntExtra(RecipesContract.RecipeEntry.COLUMN_RECIPE_ID, 0);
                 recipeName = getIntent().getStringExtra("recipeName");
-            }
-            else
-            {
-                recipeID   = savedInstanceState.getInt(STATE_KEY_ID);
-                recipeName = savedInstanceState.getString(STATE_KEY_NAME);
-            }
 
                 // In two-pane mode, add initial BodyPartFragments to the screen
                 FragmentManager fragmentManager = getSupportFragmentManager();
@@ -92,7 +82,11 @@ public class RecipeDetailActivity extends AppCompatActivity implements MasterLis
                 masterListFragment.setTwoPane(mTwoPane);
                 // Add the fragment to its container using a transaction
                 fragmentManager.beginTransaction().add(R.id.head_container, masterListFragment).commit();
-
+            }
+            else
+            {
+                recipeName = savedInstanceState.getString(STATE_KEY_NAME);
+            }
         }
 
         android.support.v7.app.ActionBar ab = getSupportActionBar();
@@ -109,10 +103,8 @@ public class RecipeDetailActivity extends AppCompatActivity implements MasterLis
     protected void onSaveInstanceState(Bundle outState)
     {
         super.onSaveInstanceState(outState);
-        outState.putInt(STATE_KEY_ID, recipeID);
         outState.putString(STATE_KEY_NAME, recipeName);
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
@@ -147,7 +139,6 @@ public class RecipeDetailActivity extends AppCompatActivity implements MasterLis
                 Toast.makeText(this, getResources().getString(R.string.widget_info_success), Toast.LENGTH_LONG).show();
                 break;
         }
-
         return super.onOptionsItemSelected(item);
     }
 
@@ -155,7 +146,6 @@ public class RecipeDetailActivity extends AppCompatActivity implements MasterLis
     public void onStepSelected(int position, Step selectedStep)
     {
        // Handle the two-pane case and replace existing fragments right when a new image is selected from the master list
-
         if (mTwoPane)
         {
             // Create two=pane interaction
@@ -165,7 +155,6 @@ public class RecipeDetailActivity extends AppCompatActivity implements MasterLis
                     .replace(R.id.detail_container, newFragment)
                     .commit();
         }
-
         else
         {
             Intent intent = new Intent(getBaseContext(), RecipeStepDetailActivity.class);

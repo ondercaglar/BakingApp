@@ -20,6 +20,7 @@ import android.widget.TextView;
 import com.example.android.bakingapp.R;
 import com.example.android.bakingapp.activity.RecipeStepDetailActivity;
 import com.example.android.bakingapp.model.Step;
+import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayer;
@@ -47,12 +48,14 @@ public class DetailPartFragment extends Fragment implements ExoPlayer.EventListe
     private static MediaSessionCompat mMediaSession;
     private PlaybackStateCompat.Builder mStateBuilder;
     private ImageView thumbnailImage;
+    private long position = C.TIME_UNSET;
+    private Uri videoUri;
 
-    private static final String TAG = RecipeStepDetailActivity.class.getSimpleName();
+    private static final String TAG       = RecipeStepDetailActivity.class.getSimpleName();
     private static final String ARG_PAGE  = "ARG_PAGE";
     private static final String ARG_STEPS = "ARG_STEPS";
     private static final String STATE_KEY_STEP_DETAIL = "state_key_step_detail";
-
+    private static final String PLAYER_POSITION       = "player_position";
 
 
     public static DetailPartFragment newInstance(int page, Step step)
@@ -92,7 +95,8 @@ public class DetailPartFragment extends Fragment implements ExoPlayer.EventListe
 
         if (savedInstanceState != null)
         {
-            mStep = savedInstanceState.getParcelable(STATE_KEY_STEP_DETAIL);
+            mStep    = savedInstanceState.getParcelable(STATE_KEY_STEP_DETAIL);
+            position = savedInstanceState.getLong(PLAYER_POSITION, 0);
         }
 
         // Inflate the Android-Me fragment layout
@@ -123,7 +127,7 @@ public class DetailPartFragment extends Fragment implements ExoPlayer.EventListe
 
                 if (TextUtils.isEmpty(thumbnailURL))
                 {
-                    Picasso.get().load(R.drawable.user_placeholder)
+                    Picasso.get().load(R.drawable.ic_placeholder1)
                                  .into(thumbnailImage);
                 }
                 else
@@ -140,11 +144,13 @@ public class DetailPartFragment extends Fragment implements ExoPlayer.EventListe
                 mPlayerView.setVisibility(View.VISIBLE);
                 thumbnailImage.setVisibility(View.GONE);
 
+                videoUri = Uri.parse(mStep.getVideoURL());
+
                 // Initialize the Media Session.
                 initializeMediaSession();
 
                 // Initialize the player.
-                initializePlayer(Uri.parse(mStep.getVideoURL()));
+                initializePlayer(videoUri);
             }
         }
 
@@ -214,6 +220,7 @@ public class DetailPartFragment extends Fragment implements ExoPlayer.EventListe
             String userAgent = Util.getUserAgent(getContext(), "BakingApp");
             MediaSource mediaSource = new ExtractorMediaSource(mediaUri, new DefaultDataSourceFactory(
                     getContext(), userAgent), new DefaultExtractorsFactory(), null, null);
+            if (position != C.TIME_UNSET) mExoPlayer.seekTo(position);
             mExoPlayer.prepare(mediaSource);
             mExoPlayer.setPlayWhenReady(true);
         }
@@ -234,11 +241,11 @@ public class DetailPartFragment extends Fragment implements ExoPlayer.EventListe
     }
 
 
-
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState)
     {
         outState.putParcelable(STATE_KEY_STEP_DETAIL,  mStep);
+        outState.putLong(PLAYER_POSITION, position);
         super.onSaveInstanceState(outState);
     }
 
@@ -247,9 +254,10 @@ public class DetailPartFragment extends Fragment implements ExoPlayer.EventListe
     public void onResume()
     {
         super.onResume();
-        if (mExoPlayer != null)
+
+        if (videoUri != null)
         {
-            mExoPlayer.setPlayWhenReady(true);
+            initializePlayer(videoUri);
         }
     }
 
@@ -259,7 +267,10 @@ public class DetailPartFragment extends Fragment implements ExoPlayer.EventListe
         super.onPause();
         if (mExoPlayer != null)
         {
-            mExoPlayer.setPlayWhenReady(false);
+            position = mExoPlayer.getCurrentPosition();
+            mExoPlayer.stop();
+            mExoPlayer.release();
+            mExoPlayer = null;
         }
     }
 
