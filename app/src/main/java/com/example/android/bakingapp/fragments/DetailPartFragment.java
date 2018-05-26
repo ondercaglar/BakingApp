@@ -50,12 +50,14 @@ public class DetailPartFragment extends Fragment implements ExoPlayer.EventListe
     private ImageView thumbnailImage;
     private long position = C.TIME_UNSET;
     private Uri videoUri;
+    private boolean isPlayWhenReady = true;
 
     private static final String TAG       = RecipeStepDetailActivity.class.getSimpleName();
     private static final String ARG_PAGE  = "ARG_PAGE";
     private static final String ARG_STEPS = "ARG_STEPS";
     private static final String STATE_KEY_STEP_DETAIL = "state_key_step_detail";
     private static final String PLAYER_POSITION       = "player_position";
+    private static final String PLAY_STATE            = "player_state";
 
 
     public static DetailPartFragment newInstance(int page, Step step)
@@ -95,8 +97,9 @@ public class DetailPartFragment extends Fragment implements ExoPlayer.EventListe
 
         if (savedInstanceState != null)
         {
-            mStep    = savedInstanceState.getParcelable(STATE_KEY_STEP_DETAIL);
-            position = savedInstanceState.getLong(PLAYER_POSITION, 0);
+            mStep           = savedInstanceState.getParcelable(STATE_KEY_STEP_DETAIL);
+            position        = savedInstanceState.getLong(PLAYER_POSITION, 0);
+            isPlayWhenReady = savedInstanceState.getBoolean(PLAY_STATE, true);
         }
 
         // Inflate the Android-Me fragment layout
@@ -222,7 +225,7 @@ public class DetailPartFragment extends Fragment implements ExoPlayer.EventListe
                     getContext(), userAgent), new DefaultExtractorsFactory(), null, null);
             if (position != C.TIME_UNSET) mExoPlayer.seekTo(position);
             mExoPlayer.prepare(mediaSource);
-            mExoPlayer.setPlayWhenReady(true);
+            mExoPlayer.setPlayWhenReady(isPlayWhenReady);
         }
     }
 
@@ -246,6 +249,7 @@ public class DetailPartFragment extends Fragment implements ExoPlayer.EventListe
     {
         outState.putParcelable(STATE_KEY_STEP_DETAIL,  mStep);
         outState.putLong(PLAYER_POSITION, position);
+        outState.putBoolean(PLAY_STATE, isPlayWhenReady);
         super.onSaveInstanceState(outState);
     }
 
@@ -267,7 +271,8 @@ public class DetailPartFragment extends Fragment implements ExoPlayer.EventListe
         super.onPause();
         if (mExoPlayer != null)
         {
-            position = mExoPlayer.getCurrentPosition();
+            position        = mExoPlayer.getCurrentPosition();
+            isPlayWhenReady = mExoPlayer.getPlayWhenReady();
             mExoPlayer.stop();
             mExoPlayer.release();
             mExoPlayer = null;
